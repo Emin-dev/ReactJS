@@ -39,6 +39,8 @@ jobs:
         run: pnpm typecheck
       - name: Lint
         run: pnpm lint
+      - name: Validate browser test discovery
+        run: pnpm exec playwright test --list
       - name: Credential-free build
         run: pnpm build
       - name: Check serialized page data and client bundles

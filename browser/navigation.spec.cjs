@@ -45,3 +45,13 @@ test('mobile menu opens repeatedly, closes on Escape and navigates to sections',
   await expect(page.getByRole('button', { name: 'Open navigation' })).toHaveAttribute('aria-expanded', 'false');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+// This explicitly exercises system mode; visual snapshots seed light mode only.
+test('system dark theme toggles to light on the first click', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await page.getByRole('button', { name: 'Toggle theme' }).filter({ visible: true }).click();
+  await expect(page.locator('html')).toHaveClass(/light/);
+});

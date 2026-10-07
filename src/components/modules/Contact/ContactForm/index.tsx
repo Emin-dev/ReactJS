@@ -1,5 +1,5 @@
 import { useSubmit } from '@formspree/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import cx from 'classnames';
 import { Formik, Form, FastField, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -10,6 +10,8 @@ const ContactForm = () => {
   const siteKey = process.env.NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY || '';
   const configured = Boolean(formId && siteKey);
   const handleSubmit = useSubmit(formId);
+  const captchaRef = useRef<Recaptcha>(null);
+  const submissionInFlightRef = useRef(false);
   const [succeeded, setSucceeded] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -27,16 +29,20 @@ const ContactForm = () => {
         message: Yup.string().required('Message field is required'),
         recaptcha: Yup.string().required('Robots are not welcome yet!'),
       })}
-      onSubmit={async ({ name, email, message, recaptcha }, { setSubmitting, resetForm, setFieldError }) => {
+      onSubmit={async ({ name, email, message, recaptcha }, { setSubmitting, resetForm, setFieldError, setFieldValue }) => {
         if (!configured) {
           setSubmitting(false);
           return;
         }
+        if (submissionInFlightRef.current) return;
+        submissionInFlightRef.current = true;
         setSucceeded(false);
         setFormError('');
         try {
           const result = await handleSubmit({ name, email, message, 'g-recaptcha-response': recaptcha });
           if (result.kind === 'error') {
+            captchaRef.current?.reset();
+            await setFieldValue('recaptcha', '', false);
             for (const [field, errors] of result.getAllFieldErrors()) {
               setFieldError(String(field), errors.map((error) => error.message).join(' '));
             }
@@ -46,8 +52,11 @@ const ContactForm = () => {
             resetForm();
           }
         } catch {
+          captchaRef.current?.reset();
+          await setFieldValue('recaptcha', '', false);
           setFormError('Something went wrong, please try again!');
         } finally {
+          submissionInFlightRef.current = false;
           setSubmitting(false);
         }
       }}
@@ -98,10 +107,9 @@ const ContactForm = () => {
           </div>
           {values.name && values.email && values.message && configured && (
             <div className="relative mb-4">
-              <FastField
-                component={Recaptcha}
+              <Recaptcha
+                ref={captchaRef}
                 sitekey={siteKey}
-                name="recaptcha"
                 onChange={(value: string | null) => setFieldValue('recaptcha', value || '')}
                 onExpired={() => setFieldValue('recaptcha', '')}
                 onErrored={() => setFieldValue('recaptcha', '')}

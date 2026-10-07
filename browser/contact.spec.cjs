@@ -3,13 +3,14 @@ const { test, expect } = require('@playwright/test');
 // A local mock, never a solved live CAPTCHA. All third-party traffic is either
 // answered by these fixtures or blocked; no real message leaves the browser.
 const captchaMock = `
+window.syntheticCaptchaCount = 0;
 window.grecaptcha = {
   ready: (callback) => callback(),
   render: (element, options) => {
     const target = typeof element === 'string' ? document.getElementById(element) : element;
     const verify = document.createElement('button');
     verify.type = 'button'; verify.textContent = 'Verify synthetic CAPTCHA';
-    verify.onclick = () => options.callback('synthetic-captcha-response');
+    verify.onclick = () => options.callback('synthetic-captcha-response-' + (++window.syntheticCaptchaCount));
     target.appendChild(verify);
     window.expireSyntheticCaptcha = () => options['expired-callback']();
     return 0;
@@ -46,8 +47,8 @@ async function fill(page) {
   await page.getByRole('textbox', { name: 'message', exact: true }).fill('Synthetic local browser fixture; never transmitted.');
 }
 
-test('required fields and CAPTCHA prevent submission; verified data goes only to mock', async fixtures => {
-  const { page } = fixtures;
+test('required fields and CAPTCHA prevent submission; verified data goes only to mock', async ({ page, context, baseURL }) => {
+  const fixtures = { page, context, baseURL };
   const { requests } = await setup(fixtures);
   await page.getByRole('button', { name: 'Submit', exact: true }).click();
   await expect(page.getByText('Full name field is required')).toBeVisible();
@@ -62,13 +63,13 @@ test('required fields and CAPTCHA prevent submission; verified data goes only to
   await page.getByRole('button', { name: 'Submit', exact: true }).dblclick();
   await expect(page.getByRole('status')).toContainText('Your message has been successfully sent');
   expect(requests).toHaveLength(1);
-  expect(requests[0]).toMatchObject({ name: 'Synthetic Test', email: 'synthetic@example.com', 'g-recaptcha-response': 'synthetic-captcha-response' });
+  expect(requests[0]).toMatchObject({ name: 'Synthetic Test', email: 'synthetic@example.com', 'g-recaptcha-response': 'synthetic-captcha-response-1' });
   await expect(page.getByRole('textbox', { name: 'name', exact: true })).toHaveValue('');
 });
 
 for (const mode of ['provider-error', 'network-error']) {
-  test(`${mode}: preserves input and allows retry`, async fixtures => {
-    const { page } = fixtures;
+  test(`${mode}: preserves input and allows retry`, async ({ page, context, baseURL }) => {
+    const fixtures = { page, context, baseURL };
     const { requests, setMode } = await setup(fixtures, mode);
     await fill(page);
     await page.getByRole('button', { name: 'Verify synthetic CAPTCHA' }).click();
@@ -79,14 +80,16 @@ for (const mode of ['provider-error', 'network-error']) {
     if (mode === 'provider-error') await expect(page.getByText('Synthetic provider rejected this email')).toBeVisible();
     expect(requests).toHaveLength(1);
     setMode('success');
+    await page.getByRole('button', { name: 'Verify synthetic CAPTCHA' }).click();
     await page.getByRole('button', { name: 'Submit', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Your message has been successfully sent');
     expect(requests).toHaveLength(2);
+    expect(requests[1]['g-recaptcha-response']).toBe('synthetic-captcha-response-2');
   });
 }
 
-test('expired CAPTCHA must be verified again', async fixtures => {
-  const { page } = fixtures;
+test('expired CAPTCHA must be verified again', async ({ page, context, baseURL }) => {
+  const fixtures = { page, context, baseURL };
   const { requests } = await setup(fixtures);
   await fill(page);
   await page.getByRole('button', { name: 'Verify synthetic CAPTCHA' }).click();

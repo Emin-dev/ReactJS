@@ -85,7 +85,7 @@ The GitHub Actions check runs tests, type checking, lint and a credential-free p
 - Tailwind 4 removes the old compiler's vulnerable dependency paths. Its configuration explicitly retains the original color palette and responsive container spacing; visual regression tests compare desktop/mobile light/dark views and the mobile menu with the pre-upgrade revision.
 - Unused GraphQL code generation, the 19,000-line generated schema and nonfunctional legacy hook configuration were removed. Runtime content and template attribution remain intact.
 
-Browser checks cover anchor navigation, Back/Forward, persisted theme changes, repeated mobile menu use, Escape dismissal, 404, required contact fields, CAPTCHA expiry, mocked success/error/retry and duplicate submission. Every external browser request is intercepted or blocked. Credential-free builds also assert empty repository HTML/JSON and absence of the server fetcher from browser bundles.
+Browser checks cover anchor navigation, Back/Forward, persisted theme changes, repeated mobile menu use, Escape dismissal, 404, required contact fields, CAPTCHA expiry, mocked success/error/retry with a fresh CAPTCHA after each failed attempt, and duplicate-submission prevention. Every external browser request is intercepted or blocked. Credential-free builds also assert empty repository HTML/JSON and absence of the server fetcher from browser bundles.
 
 The migration workflow builds its fixed historical revision only as an isolated visual reference with no application credentials. Browser reports include baseline, current and difference images. Keep the baseline fixed during a dependency migration; review intentional design changes separately.
 
