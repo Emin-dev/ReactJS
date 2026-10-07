@@ -11,26 +11,28 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       NEXT_TELEMETRY_DISABLED: '1'
-      CIRCLE_NODE_TOTAL: '3'
-      # No live GitHub or contact-provider credentials are used in CI.
+      # No live GitHub, analytics or contact-provider credentials are used in CI.
       GITHUB_TOKEN: ''
       NEXT_PUBLIC_PORTFOLIO_URL: 'https://example.com'
       NEXT_PUBLIC_FORM: 'synthetic-form-id'
-      NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY: ''
+      NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY: 'synthetic-site-key'
+      NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ''
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Install pinned pnpm
-        run: npm install --global pnpm@7.33.7
+        run: npm install --global pnpm@10.34.6
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Dependency audit
+        run: pnpm audit --audit-level=low
       - name: Privacy regression tests
         run: pnpm test
       - name: Type check
@@ -39,5 +41,35 @@ jobs:
         run: pnpm lint
       - name: Credential-free build
         run: pnpm build
-      - name: Check serialized page data
-        run: node tests/check-build.cjs
+      - name: Check serialized page data and client bundles
+        run: pnpm check:build
+      - name: Install browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Build historical visual baseline
+        run: |
+          git fetch --depth=1 origin dcfb2f89d51b16064a13141426db7be771776211
+          git worktree add --detach "$RUNNER_TEMP/portfolio-baseline" FETCH_HEAD
+          npm install --prefix "$RUNNER_TEMP/pnpm-baseline" --ignore-scripts pnpm@7.33.7
+          cd "$RUNNER_TEMP/portfolio-baseline"
+          node "$RUNNER_TEMP/pnpm-baseline/node_modules/pnpm/bin/pnpm.cjs" install --frozen-lockfile --ignore-scripts
+          CIRCLE_NODE_TOTAL=3 node node_modules/next/dist/bin/next build
+          node node_modules/next/dist/bin/next start -p 3056 > "$RUNNER_TEMP/portfolio-baseline.log" 2>&1 &
+      - name: Capture original visual baseline
+        env:
+          BROWSER_BASE_URL: 'http://127.0.0.1:3056'
+        run: |
+          for attempt in $(seq 1 30); do curl --fail --silent http://127.0.0.1:3056/ > /dev/null && break || sleep 2; done
+          pnpm exec playwright test browser/visual.spec.cjs --update-snapshots
+      - name: Browser behavior and visual regression
+        env:
+          SCREENSHOT_LOGS: '1'
+        run: pnpm test:browser
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: portfolio-browser-report
+          path: |
+            playwright-report/
+            test-results/
+            browser/__snapshots__/
+          retention-days: 14

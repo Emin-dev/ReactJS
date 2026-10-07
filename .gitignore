@@ -36,3 +36,8 @@ yarn-error.log*
 # local compiler/test output
 /.test-build/
 *.tsbuildinfo
+
+# browser verification
+/playwright-report/
+/test-results/
+/browser-baseline/

@@ -1,10 +1,6 @@
 // @ts-check
 
-/**
- * @type {import('next').NextConfig}
- **/
-const nextConfig = {
-  swcMinify: true,
-};
+/** @type {import('next').NextConfig} */
+const nextConfig = {};
 
 module.exports = nextConfig;

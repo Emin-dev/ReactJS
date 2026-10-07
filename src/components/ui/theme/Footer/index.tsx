@@ -1,5 +1,7 @@
-import Image from 'next/future/image';
+import Image from 'next/image';
 import social from './social.json';
+
+const copyrightYear = new Date().getFullYear();
 
 const Footer = () => (
   <div className="pt-56 pb-16 bg-[url('/assets/illustrations/footer.svg')] bg-cover bg-top bg-no-repeat">
@@ -7,7 +9,7 @@ const Footer = () => (
       <div className="mb-8 md:mb-0">
         <h2 className="text-brand-primary font-bold text-2xl mb-4">John Doe</h2>
         <span className="text-brand-primary">
-          © All rights are reserved | {new Date().getFullYear()} | Made with{' '}
+          © All rights are reserved | {copyrightYear} | Made with{' '}
           <span aria-label="love" role="img">
             💖
           </span>{' '}

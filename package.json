@@ -4,49 +4,47 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3040",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint",
-    "gen": "graphql-codegen --config codegen.yml",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --project tsconfig.test.json && node --test tests/*.test.cjs"
+    "test": "tsc --project tsconfig.test.json && node --test tests/*.test.cjs",
+    "test:browser": "playwright test",
+    "check:build": "node tests/check-build.cjs"
   },
   "dependencies": {
-    "@formspree/react": "^2.4.0",
-    "axios": "^0.27.2",
-    "classnames": "^2.3.1",
-    "formik": "^2.2.9",
-    "next": "^12.3.0",
-    "next-seo": "^5.5.0",
-    "next-themes": "^0.2.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-google-recaptcha": "^2.1.0",
-    "yup": "^0.32.11"
+    "@formspree/react": "3.0.0",
+    "axios": "1.20.0",
+    "classnames": "2.5.1",
+    "formik": "2.4.9",
+    "next": "16.4.0",
+    "next-seo": "7.3.0",
+    "next-themes": "0.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-google-recaptcha": "3.1.0",
+    "yup": "1.7.1"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "2.12.0",
-    "@graphql-codegen/typescript": "2.7.3",
-    "@graphql-codegen/typescript-operations": "^2.5.3",
-    "@octokit/graphql-schema": "^12.4.1",
-    "@types/node": "^18.7.16",
-    "@types/react": "^18.0.19",
-    "@types/react-dom": "^18.0.6",
-    "@types/react-google-recaptcha": "^2.1.5",
-    "autoprefixer": "^10.4.8",
-    "eslint": "^8.23.0",
-    "eslint-config-next": "^12.3.0",
-    "eslint-config-prettier": "^8.5.0",
-    "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
-    "postcss": "^8.4.16",
-    "tailwindcss": "^3.1.8",
-    "typescript": "^4.8.3"
+    "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/react-google-recaptcha": "2.1.9",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "postcss": "8.5.29",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "@playwright/test": "1.64.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@eslint/js": "10.0.1",
+    "typescript-eslint": "8.71.1",
+    "@eslint-react/eslint-plugin": "5.24.8",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.4.0"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "packageManager": "pnpm@7.33.7"
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=24 <25"
+  }
 }

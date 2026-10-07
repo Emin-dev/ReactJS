@@ -6,7 +6,11 @@ type HamburgerProps = {
 };
 
 const Hamburger = ({ sidebar, toggle }: HamburgerProps) => (
-  <div
+  <button
+    type="button"
+    aria-label={sidebar ? 'Close navigation' : 'Open navigation'}
+    aria-expanded={Boolean(sidebar)}
+    aria-controls="portfolio-navigation"
     className={cx('z-20 top-[1.6rem] right-[1.8rem] cursor-pointer burger-transition absolute block lg:hidden', {
       'right-[66%] md:right-[35%] lg:fixed lg:right-[18%] top-[1.4rem]': sidebar,
     })}
@@ -27,7 +31,7 @@ const Hamburger = ({ sidebar, toggle }: HamburgerProps) => (
         'bg-brand-primary dark:bg-white -translate-y-[7px] -rotate-45': sidebar,
       })}
     />
-  </div>
+  </button>
 );
 
 export default Hamburger;

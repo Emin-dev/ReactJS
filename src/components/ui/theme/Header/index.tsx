@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import cx from 'classnames';
 import Navbar from './Navbar';
 import Hamburger from './Hamburger';
 import Sidebar from './Sidebar';
 
 const Header = () => {
-  const [sidebar, toggle] = useState(false);
+  const [sidebar, setSidebar] = useState(false);
+
+  useEffect(() => {
+    if (!sidebar) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSidebar(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [sidebar]);
 
   return (
     <div className="w-full bg-transparent">
@@ -14,11 +23,11 @@ const Header = () => {
           'block z-10': sidebar,
           hidden: !sidebar,
         })}
-        onClick={() => toggle(!sidebar)}
+        onClick={() => setSidebar(!sidebar)}
       />
       <Navbar />
-      <Hamburger sidebar={sidebar} toggle={toggle} />
-      <Sidebar sidebar={sidebar} toggle={() => toggle(!sidebar)} />
+      <Hamburger sidebar={sidebar} toggle={setSidebar} />
+      <Sidebar sidebar={sidebar} toggle={() => setSidebar(!sidebar)} />
     </div>
   );
 };

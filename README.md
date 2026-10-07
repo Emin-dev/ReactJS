@@ -4,7 +4,7 @@ A customizable developer portfolio built with the Next.js Pages Router, React, T
 
 ## Status
 
-This is a legacy template. Its locked Next.js 12 dependency is [outside the supported Next.js release lines](https://nextjs.org/support-policy). The repository privacy fix and regression tests do not make the entire dependency stack production-ready. Upgrade and validate the framework and dependencies before a new public deployment.
+The portfolio uses Next.js 16 (the [Active LTS release line](https://nextjs.org/support-policy)), React 19, TypeScript 6, Tailwind CSS 4 and ESLint 10. It keeps the Pages Router, original sections, illustrations and public-repository privacy boundary. Deployment still requires owner-controlled service configuration and the checks below; a successful build is not a security certification.
 
 ## Features
 
@@ -18,11 +18,11 @@ The project list is star-ranked; it is not a list of pinned repositories and doe
 
 ## Local setup
 
-Use a maintained Node.js runtime with the built-in test runner (Node.js 22 is used in CI). This legacy lockfile uses pnpm 7.33.7, pinned in `package.json` to avoid accidental lockfile-format changes during the focused privacy repair. Modernizing the package manager belongs with the dependency migration.
+Use Node.js 24 LTS (see `.nvmrc`) and pnpm 10.34.6. The package manager and all direct dependencies are pinned, and the pnpm 9-format lockfile is committed. Installation intentionally disables dependency lifecycle scripts; the checked build uses the platform packages distributed through npm.
 
 ```sh
-npm install --global pnpm@7.33.7
-pnpm install --frozen-lockfile
+npm install --global pnpm@10.34.6
+pnpm install --frozen-lockfile --ignore-scripts
 cp .env.development.local.template .env.development.local
 pnpm dev
 ```
@@ -37,8 +37,9 @@ Open http://localhost:3040. A GitHub token is optional: leave it blank for a cre
 | `NEXT_PUBLIC_PORTFOLIO_URL` | Canonical URL for the portfolio | Public |
 | `NEXT_PUBLIC_FORM` | Your Formspree form ID | Public |
 | `NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY` | reCAPTCHA site key for your domain | Public; never put a secret key here |
+| `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` | Optional analytics measurement ID | Public; unset disables analytics |
 
-Edit `src/data/config.ts`, the SEO configuration and the section components with your own information. Configure your own analytics ID; the template value is not a recommendation to send visitors' data to someone else's account. Configure Formspree and reCAPTCHA with their providers before enabling the contact form. Local privacy tests do not submit forms or verify the production contact workflow.
+Edit `src/data/config.ts`, the SEO configuration and the section components with your own information. Analytics is disabled by default; use only your own measurement ID. Configure Formspree and reCAPTCHA with their providers before enabling the contact form. It is disabled when either public setting is missing. The CAPTCHA response is passed to Formspree, which must be configured to verify it server-side. Automated browser tests intercept all provider requests and never submit a live message or solve a real CAPTCHA; they cannot verify account-specific provider settings.
 
 For local production builds, copy `.env.production.local.template` to `.env.production.local` and set the public configuration values as appropriate. Keep local environment files out of source control. When deploying, set server-side credentials only in the hosting provider's protected environment configuration.
 
@@ -62,25 +63,31 @@ pnpm test
 pnpm typecheck
 pnpm lint
 # Credential-free verification; leave GITHUB_TOKEN empty in local env files too.
-GITHUB_TOKEN= NEXT_TELEMETRY_DISABLED=1 CIRCLE_NODE_TOTAL=3 pnpm build
+GITHUB_TOKEN= NEXT_TELEMETRY_DISABLED=1 pnpm build
+pnpm check:build
+pnpm audit --audit-level=low
+pnpm exec playwright install chromium
+pnpm test:browser
 ```
 
 `pnpm test` compiles the small TypeScript data boundary and uses Node's built-in test runner. The Axios adapter is replaced with synthetic responses, so tests do not contact GitHub or need credentials. Coverage includes public/private/internal records, missing and malformed privacy markers, output-field allowlisting, URL validation, serialization, malformed responses, sanitized request failures and credential-free builds. The generated `.test-build` directory is ignored.
 
-`pnpm gen` regenerates the legacy GitHub schema types from the installed schema package. The portfolio display uses a deliberately narrower type instead of exposing the provider's complete repository type.
+The unused full GitHub-schema generation pipeline was removed. The display DTO is defined and tested in `src/lib/github-repositories.ts`; it deliberately exposes only the allowlisted public fields. No application imports depended on the removed generated schema.
 
 The GitHub Actions check runs tests, type checking, lint and a credential-free production build. It does not deploy, send form submissions or require application secrets. Successful checks establish this change's behavior, not the absence of all dependency vulnerabilities.
 
-## Dependency modernization
+## Dependency maintenance
 
-Preserve the Pages Router and existing design while migrating in reviewable stages:
+- Next.js and React were upgraded together. Removed `next/future/image` and nested legacy Link anchors; SEO uses the current Pages Router API. Production builds explicitly retain the supported Webpack path to keep this migration independent from a bundler change.
+- Axios is updated; request timeouts, response limits, disabled redirects, error sanitization and the public-only serialization checks remain in place.
+- The pnpm 7 lockfile was deliberately replaced with pnpm 10's lockfile format. Do not regenerate it with an unpinned package manager.
+- TypeScript 6.0.3 is retained for compatibility with the current TypeScript ESLint API; TypeScript 7.0 does not provide that supported integration yet. ESLint 10 uses maintained TypeScript, React and Hooks flat configurations. The previous bundled Next lint configuration depended on EOL-incompatible React plugins and an unpatched `braces` path, so it was replaced rather than suppressing its warnings or audit findings.
+- Tailwind 4 removes the old compiler's vulnerable dependency paths. Its configuration explicitly retains the original color palette and responsive container spacing; visual regression tests compare desktop/mobile light/dark views and the mobile menu with the pre-upgrade revision.
+- Unused GraphQL code generation, the 19,000-line generated schema and nonfunctional legacy hook configuration were removed. Runtime content and template attribution remain intact.
 
-1. Inventory current production/development advisories and choose a currently supported Next.js release using primary release notes.
-2. Upgrade Next.js, its ESLint integration and compatible React/TypeScript dependencies together; follow the intervening migration guides.
-3. Update pnpm and regenerate its lockfile deliberately. Review all direct/transitive advisories, including Axios and the legacy code-generation tooling.
-4. Re-run the privacy tests, type checking, lint and a credential-free build. Verify themes, navigation, mobile layout, SEO and the contact flow with provider-approved test configuration before deployment.
+Browser checks cover anchor navigation, Back/Forward, persisted theme changes, repeated mobile menu use, Escape dismissal, 404, required contact fields, CAPTCHA expiry, mocked success/error/retry and duplicate submission. Every external browser request is intercepted or blocked. Credential-free builds also assert empty repository HTML/JSON and absence of the server fetcher from browser bundles.
 
-Do not use a blanket major-version force update or consider an old framework patch equivalent to current support.
+The migration workflow builds its fixed historical revision only as an isolated visual reference with no application credentials. Browser reports include baseline, current and difference images. Keep the baseline fixed during a dependency migration; review intentional design changes separately.
 
 ## Security
 

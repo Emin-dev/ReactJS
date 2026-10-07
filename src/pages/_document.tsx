@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from 'next/document';
 
 const Document = () => {
   return (
-    <Html lang="en" className="scroll-smooth">
+    <Html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
       <Head>
         <link rel="preload" href="/fonts/roboto-v18-latin-regular.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/roboto-v18-latin-regular.woff" as="font" type="font/woff" crossOrigin="" />

@@ -2,13 +2,17 @@
 
 ## Maintenance status
 
-This repository is a legacy Next.js 12 portfolio template. Next.js 12 is outside the [supported release lines](https://nextjs.org/support-policy). The focused repository-privacy fix is not a complete security audit or a dependency-modernization claim. Migrate to supported dependencies and review current advisories before production deployment.
+This portfolio uses the supported Next.js 16 release line and current React, Axios and ESLint dependencies, with TypeScript 6 for tooling compatibility. Lockfile audits, synthetic privacy tests, production-output checks and browser regressions run in CI. Review current advisories before each deployment; passing checks is not a complete security audit or a guarantee against unknown vulnerabilities.
+
+Dependency install scripts are disabled. The obsolete code-generation pipeline is removed. The unpatched legacy `braces` path is avoided by replacing the old CSS compiler and bundled ESLint dependency tree, not by ignoring its advisory.
 
 ## Public repository metadata
 
 Treat generated HTML, `__NEXT_DATA__`, Next.js page-data JSON and build artifacts as public. The GitHub query must remain restricted to public repositories. Retain the explicit `isPrivate === false` and `visibility === 'PUBLIC'` checks and field allowlist in `src/lib/github-repositories.ts`; UI-only filtering does not protect serialized page props.
 
-Use least-privilege server-only credentials. Never use a private-access token for the portfolio, print provider response bodies, expose Axios errors with request headers, or add real private records to fixtures. Tests use synthetic data and an intercepted HTTP adapter.
+Use least-privilege server-only credentials. Never use a private-access token for the portfolio, print provider response bodies, expose Axios errors with request headers, or add real private records to fixtures. Tests use synthetic data and an intercepted HTTP adapter. Browser tests block or mock every external request, including analytics, Formspree and reCAPTCHA. Never enable real provider credentials in these tests.
+
+The contact form requires both provider settings. Client validation is only a usability safeguard: configure Formspree to verify the submitted CAPTCHA response server-side. Analytics is opt-in through an owner-controlled public measurement ID.
 
 ## Existing deployments
 
