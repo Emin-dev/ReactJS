@@ -38,6 +38,8 @@ async function setup({ context, baseURL, page }, mode = 'success') {
     return route.abort();
   });
   await page.goto('/#contact');
+  // The theme control is client-only, so its presence confirms hydration.
+  await expect(page.getByRole('button', { name: 'Toggle theme' }).filter({ visible: true })).toBeVisible();
   return { requests, setMode: value => { currentMode = value; } };
 }
 
@@ -45,6 +47,9 @@ async function fill(page) {
   await page.getByRole('textbox', { name: 'name', exact: true }).fill('Synthetic Test');
   await page.getByRole('textbox', { name: 'email', exact: true }).fill('synthetic@example.com');
   await page.getByRole('textbox', { name: 'message', exact: true }).fill('Synthetic local browser fixture; never transmitted.');
+  await expect(page.getByRole('textbox', { name: 'name', exact: true })).toHaveValue('Synthetic Test');
+  await expect(page.getByRole('textbox', { name: 'email', exact: true })).toHaveValue('synthetic@example.com');
+  await expect(page.getByRole('button', { name: 'Verify synthetic CAPTCHA' })).toBeVisible();
 }
 
 test('required fields and CAPTCHA prevent submission; verified data goes only to mock', async ({ page, context, baseURL }) => {

@@ -1,4 +1,4 @@
-// Preserve the original portfolio palette while using the current compiler.
+// Preserve the original portfolio palette and Tailwind 3.1.8 font fallback order.
 module.exports = {
   "content": [
     "./src/**/*.{js,ts,jsx,tsx}"
@@ -85,6 +85,22 @@ module.exports = {
         ],
         "body": [
           "Roboto\""
+        ],
+        "sans": [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "\"Segoe UI\"",
+          "Roboto",
+          "\"Helvetica Neue\"",
+          "Arial",
+          "\"Noto Sans\"",
+          "sans-serif",
+          "\"Apple Color Emoji\"",
+          "\"Segoe UI Emoji\"",
+          "\"Segoe UI Symbol\"",
+          "\"Noto Color Emoji\""
         ]
       }
     }

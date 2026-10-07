@@ -5,7 +5,19 @@ const sharp = require(require.resolve('sharp', { paths: [require.resolve('next')
   for (const name of ['desktop-light', 'desktop-dark', 'mobile-light', 'mobile-dark', 'mobile-menu']) {
     const baseline = `browser/__snapshots__/${name}.png`;
     const actual = `test-results/visual-receipts/${name}.png`;
+    if (process.env.LOG_BASELINE_PNGS === '1' && fs.existsSync(baseline)) {
+      console.log(`PORTFOLIO_BASELINE_${name.toUpperCase().replaceAll('-', '_')}=${fs.readFileSync(baseline).toString('base64')}`);
+    }
     if (!fs.existsSync(baseline) || !fs.existsSync(actual)) continue;
+    const originalPixels = await sharp(baseline).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const currentPixels = await sharp(actual).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    if (originalPixels.info.width === currentPixels.info.width && originalPixels.info.height === currentPixels.info.height) {
+      let changed = 0;
+      for (let i = 0; i < originalPixels.data.length; i += 4) {
+        if (!originalPixels.data.subarray(i, i + 4).equals(currentPixels.data.subarray(i, i + 4))) changed++;
+      }
+      console.log(`PORTFOLIO_PIXEL_METRIC ${name} ${changed}/${originalPixels.info.width * originalPixels.info.height} raw RGBA pixels differ`);
+    }
     const left = await sharp(baseline).resize({ width: 400 }).png().toBuffer();
     const right = await sharp(actual).resize({ width: 400 }).png().toBuffer();
     const a = await sharp(left).metadata();
