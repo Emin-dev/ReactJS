@@ -1,7 +1,7 @@
-import { RepositoryEdge } from 'generated/graphql';
+import type { PublicRepositoryEdge } from 'lib/github-repositories';
 import Repository from 'components/ui/Repository';
 
-type ProjectsProps = { data: RepositoryEdge[] };
+type ProjectsProps = { data: PublicRepositoryEdge[] };
 
 const Projects = ({ data }: ProjectsProps) => (
   <div className="container py-8" id="projects">

@@ -2,9 +2,9 @@ import { useTheme } from 'next-themes';
 import React from 'react';
 import ForkIcon from 'components/ui/Icons/Fork';
 import StarIcon from 'components/ui/Icons/Star';
-import { Repository } from 'generated/graphql';
+import type { PublicRepository } from 'lib/github-repositories';
 
-const Repository = ({ name, description, stargazers, forkCount, languages, url }: Repository) => {
+const Repository = ({ name, description, stargazers, forkCount, languages, url }: PublicRepository) => {
   const { resolvedTheme } = useTheme();
 
   return (

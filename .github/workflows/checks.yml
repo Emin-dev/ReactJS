@@ -1,0 +1,43 @@
+name: Portfolio checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CIRCLE_NODE_TOTAL: '3'
+      # No live GitHub or contact-provider credentials are used in CI.
+      GITHUB_TOKEN: ''
+      NEXT_PUBLIC_PORTFOLIO_URL: 'https://example.com'
+      NEXT_PUBLIC_FORM: 'synthetic-form-id'
+      NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY: ''
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@7.33.7
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Privacy regression tests
+        run: pnpm test
+      - name: Type check
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Credential-free build
+        run: pnpm build
+      - name: Check serialized page data
+        run: node tests/check-build.cjs
