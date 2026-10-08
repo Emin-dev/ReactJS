@@ -5,7 +5,7 @@ const seoConfig = {
     type: 'website',
     locale: 'en_US',
     url: 'https://portfolio-next.smakosh.com/',
-    site_name: 'Portfolio Next',
+    siteName: 'Portfolio Next',
     images: [
       {
         url: 'https://portfolio-next.smakosh.com/assets/thumbnail/thumbnail.png',

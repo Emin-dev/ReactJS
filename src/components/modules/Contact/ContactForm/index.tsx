@@ -1,11 +1,19 @@
-import { useForm } from '@formspree/react';
+import { useSubmit } from '@formspree/react';
+import { useRef, useState } from 'react';
 import cx from 'classnames';
 import { Formik, Form, FastField, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Recaptcha from 'react-google-recaptcha';
 
 const ContactForm = () => {
-  const [state, handleSubmit] = useForm(process.env.NEXT_PUBLIC_FORM as string);
+  const formId = process.env.NEXT_PUBLIC_FORM || '';
+  const siteKey = process.env.NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY || '';
+  const configured = Boolean(formId && siteKey);
+  const handleSubmit = useSubmit(formId);
+  const captchaRef = useRef<Recaptcha>(null);
+  const submissionInFlightRef = useRef(false);
+  const [succeeded, setSucceeded] = useState(false);
+  const [formError, setFormError] = useState('');
 
   return (
     <Formik
@@ -19,26 +27,36 @@ const ContactForm = () => {
         name: Yup.string().required('Full name field is required'),
         email: Yup.string().email('Invalid email').required('Email field is required'),
         message: Yup.string().required('Message field is required'),
-        recaptcha:
-          process.env.NODE_ENV !== 'development' ? Yup.string().required('Robots are not welcome yet!') : Yup.string(),
+        recaptcha: Yup.string().required('Robots are not welcome yet!'),
       })}
-      onSubmit={async ({ name, email, message }, { setSubmitting, resetForm, setFieldError }) => {
+      onSubmit={async ({ name, email, message, recaptcha }, { setSubmitting, resetForm, setFieldError, setFieldValue }) => {
+        if (!configured) {
+          setSubmitting(false);
+          return;
+        }
+        if (submissionInFlightRef.current) return;
+        submissionInFlightRef.current = true;
+        setSucceeded(false);
+        setFormError('');
         try {
-          await handleSubmit({
-            name,
-            email,
-            message,
-          });
-
-          setTimeout(() => resetForm(), 4000);
-        } catch (err) {
-          alert('Something went wrong, please try again!');
-        } finally {
-          if (state.errors) {
-            state.errors.forEach((error) => {
-              setFieldError(error.field || 'email', error.message);
-            });
+          const result = await handleSubmit({ name, email, message, 'g-recaptcha-response': recaptcha });
+          if (result.kind === 'error') {
+            captchaRef.current?.reset();
+            await setFieldValue('recaptcha', '', false);
+            for (const [field, errors] of result.getAllFieldErrors()) {
+              setFieldError(String(field), errors.map((error) => error.message).join(' '));
+            }
+            setFormError(result.getFormErrors().map((error) => error.message).join(' ') || 'Please check the form and try again.');
+          } else {
+            setSucceeded(true);
+            resetForm();
           }
+        } catch {
+          captchaRef.current?.reset();
+          await setFieldValue('recaptcha', '', false);
+          setFormError('Something went wrong, please try again!');
+        } finally {
+          submissionInFlightRef.current = false;
           setSubmitting(false);
         }
       }}
@@ -87,26 +105,29 @@ const ContactForm = () => {
             />
             <ErrorMessage className="text-red-600 block mt-1" component="span" name="message" />
           </div>
-          {values.name && values.email && values.message && process.env.NODE_ENV !== 'development' && (
+          {values.name && values.email && values.message && configured && (
             <div className="relative mb-4">
-              <FastField
-                component={Recaptcha}
-                sitekey={process.env.NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY}
-                name="recaptcha"
-                onChange={(value: string) => setFieldValue('recaptcha', value)}
+              <Recaptcha
+                ref={captchaRef}
+                sitekey={siteKey}
+                onChange={(value: string | null) => setFieldValue('recaptcha', value || '')}
+                onExpired={() => setFieldValue('recaptcha', '')}
+                onErrored={() => setFieldValue('recaptcha', '')}
               />
               <ErrorMessage className="text-red-600 block mt-1" component="span" name="recaptcha" />
             </div>
           )}
-          {state.succeeded && (
+          {succeeded && (
             <div className="relative mb-4">
-              <div className="text-center">
+              <div className="text-center" role="status">
                 <h4 className="font-normal">Your message has been successfully sent, I will get back to you ASAP!</h4>
               </div>
             </div>
           )}
+          {!configured && <p role="status" className="mb-4">The contact form is not configured yet.</p>}
+          {formError && <p role="alert" className="text-red-600 block mb-4">{formError}</p>}
           <div className="text-left">
-            <button type="submit" className="button button-secondary" disabled={isSubmitting}>
+            <button type="submit" className="button button-secondary" disabled={isSubmitting || !configured}>
               Submit
             </button>
           </div>

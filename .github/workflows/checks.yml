@@ -1,0 +1,65 @@
+name: Portfolio checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      # No live GitHub, analytics or contact-provider credentials are used in CI.
+      GITHUB_TOKEN: ''
+      NEXT_PUBLIC_PORTFOLIO_URL: 'https://example.com'
+      NEXT_PUBLIC_FORM: 'synthetic-form-id'
+      NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY: 'synthetic-site-key'
+      NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ''
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@10.34.6
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Dependency audit
+        run: pnpm audit --audit-level=low
+      - name: Privacy regression tests
+        run: pnpm test
+      - name: Type check
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Validate browser test discovery
+        run: pnpm exec playwright test --list
+      - name: Credential-free build
+        run: pnpm build
+      - name: Check serialized page data and client bundles
+        run: pnpm check:build
+      - name: Install browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Browser behavior and visual regression
+        env:
+          SCREENSHOT_LOGS: '1'
+        run: pnpm test:browser
+      - name: Log visual review contact sheets
+        if: always()
+        run: node tests/log-visual-receipts.cjs
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: portfolio-browser-report
+          path: |
+            playwright-report/
+            test-results/
+            browser/__snapshots__/
+          retention-days: 14

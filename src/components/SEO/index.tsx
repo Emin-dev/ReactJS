@@ -1,17 +1,19 @@
 import config from 'data/config';
-import { NextSeo } from 'next-seo';
+import Head from 'next/head';
+import { generateNextSeo } from 'next-seo/pages';
 
 const { url, defaultDescription, defaultTitle } = config;
 
 const SEO = ({
-  location = url,
+  location = '',
   title = defaultTitle,
   description = defaultDescription,
 }) => (
-  <NextSeo
-    title={title}
-    description={description}
-    additionalMetaTags={[
+  <Head>{generateNextSeo({
+    title,
+    description,
+    canonical: `${url}${location}`,
+    additionalMetaTags: [
       {
         name: 'image',
         content: `${url}/assets/thumbnail/thumbnail.png`,
@@ -52,8 +54,8 @@ const SEO = ({
         name: 'twitter:image',
         content: `${url}/assets/thumbnail/thumbnail.png`,
       },
-    ]}
-  />
+    ],
+  })}</Head>
 );
 
 export default SEO;

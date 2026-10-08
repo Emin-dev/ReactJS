@@ -1,84 +1,108 @@
-# A basic portfolio for developers
+# ReactJS · Developer portfolio
 
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+A customizable developer portfolio built with the Next.js Pages Router, React, TypeScript and Tailwind CSS. This repository is based on [smakosh/next-portfolio-dev](https://github.com/smakosh/next-portfolio-dev). The original design, contributor credits and illustrations remain attributed below.
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+## Status
 
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsmakosh%2Fnext-portfolio-dev&env=GITHUB_TOKEN&envDescription=Get%20your%20GitHub%20token&envLink=https%3A%2F%2Fgithub.com%2Fsettings%2Ftokens%2Fnew%3Fscopes%3Drepo%26description%3Dportfolio-dev&project-name=my-portfolio-dev&repo-name=my-portfolio-dev&demo-title=Next%20Portfolio%20Dev&demo-description=A%20simple%20portfolio%20for%20developers&demo-url=https%3A%2F%2Fportfolio-next.smakosh.com%2F&demo-image=http%3A%2F%2Fportfolio-next.smakosh.com%2Fassets%2Fthumbnail%2Fthumbnail.png&integration-ids=oac_SOUPsixV2TP6CkvfaB91Jhri)
-
-[![Powered by Vercel](./powered-by-vercel.svg)](https://vercel.com?utm_source=smakosh&utm_campaign=oss)
-
-## Gatsby version
-
-[Gatsby-portfolio-portfolio](https://github.com/smakosh/gatsby-portfolio-dev)
-
-<img width="465" alt="Screenshot 2022-06-08 at 15 56 48" src="https://user-images.githubusercontent.com/20082141/172635162-258fffac-de31-446e-89b7-364b71496065.png">
+The portfolio uses Next.js 16 (the [Active LTS release line](https://nextjs.org/support-policy)), React 19, TypeScript 6, Tailwind CSS 4 and ESLint 10. It keeps the Pages Router, original sections, illustrations and public-repository privacy boundary. Deployment still requires owner-controlled service configuration and the checks below; a successful build is not a security certification.
 
 ## Features
 
-- TypeScript
-- Eslint/Prettier configured
-- Scores 100% on a11y / Performance / PWA / SEO
-- PWA (desktop & mobile)
-- Easy to customize
-- Nice project structure
-- Amazing illustrations by [Undraw.co](https://undraw.co)
-- Tablet & mobile friendly
-- Continuous deployment with [Vercel](https://vercel.com/?utm_source=smakosh)
-- A contact form protected by Google Recaptcha powered by Formspree
-- Can be deployed with one click
-- Fetches your Github pinned projects with most stars (You could customize this if you wish) using ISR
-- One click deployment to Vercel
+- Responsive portfolio sections, light/dark themes and SEO configuration
+- Up to eight public repositories from the configured GitHub token owner, ordered by stars
+- Incremental static regeneration with a ten-second revalidation interval
+- Formspree contact form and Google reCAPTCHA integration
+- Local privacy regression tests that use synthetic records and no live services
 
-## Design
+The project list is star-ranked; it is not a list of pinned repositories and does not change GitHub profile pins. Performance, accessibility and security scores depend on deployment and have not been certified here.
 
-Project on [Behance](https://www.behance.net/gallery/74172961/Free-Gatsby-portfolio-for-developers)
+## Local setup
 
-## Prerequisites
+Use Node.js 24 LTS (see `.nvmrc`) and pnpm 10.34.6. The package manager and all direct dependencies are pinned, and the pnpm 9-format lockfile is committed. Installation intentionally disables dependency lifecycle scripts; the checked build uses the platform packages distributed through npm.
 
-### Online
+```sh
+npm install --global pnpm@10.34.6
+pnpm install --frozen-lockfile --ignore-scripts
+cp .env.development.local.template .env.development.local
+pnpm dev
+```
 
-1. Grab a Google recaptcha key from [Google Recaptcha](https://www.google.com/recaptcha/admin)
-2. Grab your Github token from [GitHub](https://github.com/settings/tokens/new?scopes=repo&description=portfolio-dev)
-3. Click [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsmakosh%2Fnext-portfolio-dev&env=GITHUB_TOKEN&envDescription=Get%20your%20GitHub%20token&envLink=https%3A%2F%2Fgithub.com%2Fsettings%2Ftokens%2Fnew%3Fscopes%3Drepo%26description%3Dportfolio-dev&project-name=my-portfolio-dev&repo-name=my-portfolio-dev&demo-title=Next%20Portfolio%20Dev&demo-description=A%20simple%20portfolio%20for%20developers&demo-url=https%3A%2F%2Fportfolio-next.smakosh.com%2F&demo-image=http%3A%2F%2Fportfolio-next.smakosh.com%2Fassets%2Fthumbnail%2Fthumbnail.png&integration-ids=oac_SOUPsixV2TP6CkvfaB91Jhri) and pass in your:
+Open http://localhost:3040. A GitHub token is optional: leave it blank for a credential-free build with an empty projects section. Do not use real private repository records in fixtures, screenshots or debug logs.
 
-- Github token
+### Configuration
 
-To Env variables section.
+| Variable | Purpose | Exposure |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | Optional GitHub token used during static generation and revalidation | Server only; never add a `NEXT_PUBLIC_` prefix |
+| `NEXT_PUBLIC_PORTFOLIO_URL` | Canonical URL for the portfolio | Public |
+| `NEXT_PUBLIC_FORM` | Your Formspree form ID | Public |
+| `NEXT_PUBLIC_PORTFOLIO_RECAPTCHA_KEY` | reCAPTCHA site key for your domain | Public; never put a secret key here |
+| `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` | Optional analytics measurement ID | Public; unset disables analytics |
 
-### Locally
+Edit `src/data/config.ts`, the SEO configuration and the section components with your own information. Analytics is disabled by default; use only your own measurement ID. Configure Formspree and reCAPTCHA with their providers before enabling the contact form. It is disabled when either public setting is missing. The CAPTCHA response is passed to Formspree, which must be configured to verify it server-side. Automated browser tests intercept all provider requests and never submit a live message or solve a real CAPTCHA; they cannot verify account-specific provider settings.
 
-1. Create an account at [Formspree](https://formspree.io/?utm_source=smakosh)
-2. Install [Pnpm](https://pnpm.io/)
-3. Grab your Github token from [GitHub](https://github.com/settings/tokens/new?scopes=repo&description=portfolio-dev)
-4. Run `cp .env.development.local.template .env.development.local`
-   > If you'd like to build the website locally, you will need to run `cp .env.development.local.template .env.development.local` as well and provide your env variables.
-5. Run `pnpm i && pnpm dev`
+For local production builds, copy `.env.production.local.template` to `.env.production.local` and set the public configuration values as appropriate. Keep local environment files out of source control. When deploying, set server-side credentials only in the hosting provider's protected environment configuration.
 
-   > You could run `vercel env pull` to get your env variables from Vercel.
+### GitHub access and public output
 
-6. Make sure to edit the `src/data/config.ts` file
+Use a dedicated least-privilege token that can read public repository metadata. Do not grant private-repository access, broad classic `repo` scope or write access for this portfolio. Consult [GitHub's token guidance](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for the token type and permissions appropriate to your account. The token owner determines which profile is queried.
 
-### Deploying locally to Vercel
+`src/lib/github-repositories.ts` implements two independent safeguards:
 
-I highly recommend that you push to GitHub/GitLab and deploy your repository to Vercel instead or just hit the Deploy button.
+1. The GraphQL query requests `privacy: PUBLIC` and includes `isPrivate` and `visibility`.
+2. Before `getStaticProps` returns, only records with `isPrivate === false` and `visibility === 'PUBLIC'` are retained. Missing, null, malformed, private, internal or conflicting markers fail closed. New objects contain only the display fields; raw provider objects, tokens and error details never become page props.
 
-## Built with
+Returned repository URLs are restricted to HTTPS GitHub repository URLs. Requests have a timeout, a response-size limit and no redirects. Missing credentials render an empty project list without making an API request. Network failures, GraphQL errors and malformed response envelopes throw a sanitized error rather than serializing partial provider data or credential-bearing Axios errors.
 
-- Adobe XD
-- Next js
-- TypeScript
-- Formspree
-- VSCode
-- And these useful of JavaScript libraries [package.json](package.json)
+Static output is public and can be cached. This change does not erase older builds, CDN caches or previously published information. After applying the fix, owners of an existing deployment should rebuild and invalidate affected cached pages/JSON. If a formerly public repository becomes private, review and purge cached output; ISR can retain the last successful page after an upstream error and cannot guarantee immediate removal. No deployment or cache invalidation is performed by the code itself.
 
-## License
+## Development and checks
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for more details
+```sh
+pnpm test
+pnpm typecheck
+pnpm lint
+# Credential-free verification; leave GITHUB_TOKEN empty in local env files too.
+GITHUB_TOKEN= NEXT_TELEMETRY_DISABLED=1 pnpm build
+pnpm check:build
+pnpm audit --audit-level=low
+pnpm exec playwright install chromium
+pnpm test:browser
+```
 
-## Contributors
+`pnpm test` compiles the small TypeScript data boundary and uses Node's built-in test runner. The Axios adapter is replaced with synthetic responses, so tests do not contact GitHub or need credentials. Coverage includes public/private/internal records, missing and malformed privacy markers, output-field allowlisting, URL validation, serialization, malformed responses, sanitized request failures and credential-free builds. The generated `.test-build` directory is ignored.
+
+The unused full GitHub-schema generation pipeline was removed. The display DTO is defined and tested in `src/lib/github-repositories.ts`; it deliberately exposes only the allowlisted public fields. No application imports depended on the removed generated schema.
+
+The GitHub Actions check runs tests, type checking, lint and a credential-free production build. It does not deploy, send form submissions or require application secrets. Successful checks establish this change's behavior, not the absence of all dependency vulnerabilities.
+
+## Dependency maintenance
+
+- Next.js and React were upgraded together. Removed `next/future/image` and nested legacy Link anchors; SEO uses the current Pages Router API. Production builds explicitly retain the supported Webpack path to keep this migration independent from a bundler change.
+- Axios is updated; request timeouts, response limits, disabled redirects, error sanitization and the public-only serialization checks remain in place.
+- The pnpm 7 lockfile was deliberately replaced with pnpm 10's lockfile format. Do not regenerate it with an unpinned package manager.
+- TypeScript 6.0.3 is retained for compatibility with the current TypeScript ESLint API; TypeScript 7.0 does not provide that supported integration yet. ESLint 10 uses maintained TypeScript, React and Hooks flat configurations. The previous bundled Next lint configuration depended on EOL-incompatible React plugins and an unpatched `braces` path, so it was replaced rather than suppressing its warnings or audit findings.
+- Tailwind 4 removes the old compiler's vulnerable dependency paths. Its configuration explicitly retains the original color palette and responsive container spacing; visual regression tests compare desktop/mobile light/dark views and the mobile menu with the pre-upgrade revision.
+- Unused GraphQL code generation, the 19,000-line generated schema and nonfunctional legacy hook configuration were removed. Runtime content and template attribution remain intact.
+
+Browser checks cover anchor navigation, Back/Forward, persisted theme changes, repeated mobile menu use, Escape dismissal, 404, required contact fields, CAPTCHA expiry, mocked success/error/retry with a fresh CAPTCHA after each failed attempt, and duplicate-submission prevention. Every external browser request is intercepted or blocked. Credential-free builds also assert empty repository HTML/JSON and absence of the server fetcher from browser bundles.
+
+The committed screenshots in `browser/__snapshots__` were captured from the fixed pre-upgrade revision with no application credentials. See `browser/BASELINE.md` for provenance. CI compares the current app against those fixtures without installing or running the unsupported historical toolchain. Reports include baseline, current and difference images. Keep the baseline fixed during dependency maintenance; review intentional design changes separately.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for scope, safe reporting and deployment precautions. Never open a public issue containing credentials or private repository metadata.
+
+## Upstream attribution
+
+- Template: [smakosh/next-portfolio-dev](https://github.com/smakosh/next-portfolio-dev)
+- Original design: [Behance](https://www.behance.net/gallery/74172961/Free-Gatsby-portfolio-for-developers)
+- Illustrations: [unDraw](https://undraw.co)
+- Related Gatsby version: [smakosh/gatsby-portfolio-dev](https://github.com/smakosh/gatsby-portfolio-dev)
+
+The original README described an MIT license, but this checkout does not contain the referenced `LICENSE.md`. Confirm applicable upstream terms before redistribution; this maintenance change does not invent or replace a license.
+
+## Original contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -94,7 +118,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-## Support
-
-If you love this Next js template and want to support me, you can do so through my GitHub profile.
