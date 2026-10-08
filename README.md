@@ -87,7 +87,7 @@ The GitHub Actions check runs tests, type checking, lint and a credential-free p
 
 Browser checks cover anchor navigation, Back/Forward, persisted theme changes, repeated mobile menu use, Escape dismissal, 404, required contact fields, CAPTCHA expiry, mocked success/error/retry with a fresh CAPTCHA after each failed attempt, and duplicate-submission prevention. Every external browser request is intercepted or blocked. Credential-free builds also assert empty repository HTML/JSON and absence of the server fetcher from browser bundles.
 
-The migration workflow builds its fixed historical revision only as an isolated visual reference with no application credentials. Browser reports include baseline, current and difference images. Keep the baseline fixed during a dependency migration; review intentional design changes separately.
+The committed screenshots in `browser/__snapshots__` were captured from the fixed pre-upgrade revision with no application credentials. See `browser/BASELINE.md` for provenance. CI compares the current app against those fixtures without installing or running the unsupported historical toolchain. Reports include baseline, current and difference images. Keep the baseline fixed during dependency maintenance; review intentional design changes separately.
 
 ## Security
 

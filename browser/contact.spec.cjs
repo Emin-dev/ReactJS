@@ -1,4 +1,13 @@
 const { test, expect } = require('@playwright/test');
+const pageErrors = new WeakMap();
+test.beforeEach(async ({ page }) => {
+  const errors = [];
+  pageErrors.set(page, errors);
+  page.on('pageerror', error => errors.push(error.message));
+});
+test.afterEach(async ({ page }) => {
+  expect(pageErrors.get(page)).toEqual([]);
+});
 
 // A local mock, never a solved live CAPTCHA. All third-party traffic is either
 // answered by these fixtures or blocked; no real message leaves the browser.
@@ -17,7 +26,8 @@ window.grecaptcha = {
   },
   getResponse: () => 'synthetic-captcha-response', reset: () => {}, execute: () => {}
 };
-window.onloadcallback && window.onloadcallback();
+// The provider callback runs after api.js has loaded, as the real bootstrap does.
+document.currentScript.addEventListener('load', () => window.onloadcallback && window.onloadcallback(), { once: true });
 `;
 
 async function setup({ context, baseURL, page }, mode = 'success') {
