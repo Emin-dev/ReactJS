@@ -89,7 +89,7 @@ for (const mode of ['provider-error', 'network-error']) {
     await fill(page);
     await page.getByRole('button', { name: 'Verify synthetic CAPTCHA' }).click();
     await page.getByRole('button', { name: 'Submit', exact: true }).click();
-    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.locator('form').getByRole('alert')).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'name', exact: true })).toHaveValue('Synthetic Test');
     await expect(page.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
     if (mode === 'provider-error') await expect(page.getByText('Synthetic provider rejected this email')).toBeVisible();
